@@ -20,7 +20,7 @@ function mostPowerfulGuildsDatabase()
 	global $db, $config;
 
 	$ret = array();
-	if(tableExist('killers')) { // TFS 0.3 + 0.4
+	if($db->hasTable('killers')) { // TFS 0.3 + 0.4
 		foreach ($db->query('SELECT `g`.`id` AS `id`, `g`.`name` AS `name`,
 		`g`.`logo_name` AS `logo_name`, COUNT(`g`.`name`) as `frags`
 		FROM `killers` k
@@ -32,7 +32,7 @@ function mostPowerfulGuildsDatabase()
 			GROUP BY `name`
 			ORDER BY `frags` DESC, `name` ASC
 			LIMIT 0, ' . $config['powerful_guilds']['amount'] . ';') as $guild)
-				$ret[] = array('id' => $guild['id'], 'name' => $guild['name'], 'logo' => $guild['logo'], 'frags' => $guild['frags']);
+				$ret[] = array('id' => $guild['id'], 'name' => $guild['name'], 'logo_name' => $guild['logo_name'], 'frags' => $guild['frags']);
 	}
 	else { // TFS 1.0+
 		foreach($db->query('SELECT `g`.`id` AS `id`, `g`.`name` AS `name`,
@@ -45,33 +45,10 @@ function mostPowerfulGuildsDatabase()
 			GROUP BY `name`
 			ORDER BY `frags` DESC, `name` ASC
 			LIMIT 0, ' . $config['powerful_guilds']['amount'] . ';') as $guild) {
-				$ret[] = array('id' => $guild['id'], 'name' => $guild['name'], 'logo' => $guild['logo'], 'frags' => $guild['frags']);
+				$ret[] = array('id' => $guild['id'], 'name' => $guild['name'], 'logo_name' => $guild['logo_name'], 'frags' => $guild['frags']);
 		}
 	}
 
-	return $ret;
-}
-
-function mostPowerfulGuildsList()
-{
-	global $cache, $config;
-
-	if(!$cache->enabled())
-		return mostPowerfulGuildsDatabase();
-
-	$ret = array();
-	$tmp = '';
-	if($cache->fetch('powerful_guilds', $tmp))
-		$ret = unserialize($tmp);
-
-	if(!isset($ret[0]) || $ret['updated'] + $config['powerful_guilds']['refresh_interval'] < time())
-	{
-		$ret = mostPowerfulGuildsDatabase();
-		$ret['updated'] = time();
-		$cache->set('powerful_guilds', serialize($ret));
-	}
-
-	unset($ret['updated']);
 	return $ret;
 }
 
@@ -82,7 +59,10 @@ $twig_loader->prependPath(__DIR__);
 $_page = $config['powerful_guilds']['page'];
 if(!isset($_page[0]) || $_page == PAGE)
 {
-	$guilds = mostPowerfulGuildsList();
+	$guilds = \MyAAC\Cache::remember('powerful-guilds', $config['powerful_guilds']['refresh_interval'], function() {
+		return mostPowerfulGuildsDatabase();
+	});
+
 	// just for testing purposes if you don't have any kills on server
 	//$guilds = $db->query('SELECT * FROM guilds LIMIT ' . $config['powerful_guilds']['amount'])->fetchAll();
 	if(count($guilds) > 0) {

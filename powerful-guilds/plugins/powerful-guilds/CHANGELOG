@@ -1,3 +1,7 @@
+[2.1 - 17.06.2025]
+	* use Cache::remember
+	* fix guild logo images
+
 [2.0.3 - 27.01.2025]
 	* small adjustment to guild logos loading from database
 
