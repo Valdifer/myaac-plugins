@@ -33,6 +33,9 @@
 				<div class="lampa-left"></div>
 				<div class="lampa-right"></div>
 			</div>
+
+			<!--div id="logo"></div-->
+
 			<div id="panel">
 				<div id="panel-padding-left">
 					<div class="search_character"></div>

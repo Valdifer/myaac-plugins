@@ -8,8 +8,8 @@
  */
 defined('MYAAC') or die('Direct access not allowed!');
 
-global $action, $twig, $template_name;
-if($template_name == 'emma' && PAGE == 'accountmanagement' && !empty($action)) {
+global $action, $twig, $template_name, $logged;
+if($logged && $template_name == 'emma' && !empty($action) &&
+	(PAGE == 'accountmanagement' || PAGE == 'account/manage')) {
 	echo $twig->render('emma-account-menu.html.twig');
 }
-?>
